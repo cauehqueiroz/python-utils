@@ -84,134 +84,86 @@ def identificar_label_chave(chave, tipo_param):
         return "CNPJ" # Fallback padrão
 
 def criar_imagem_plaquinha_pix(chave, nome_beneficiario, tipo_chave_param="auto", salvar_como="plaquinha_pix.png"):
-    largura, altura = 400, 650
-    background_color = "#f4eae6"
+    # Aumentamos a estrutura para suportar fontes grandes de verdade
+    largura, altura = 450, 720
+    background_color = "#ffffff"
     text_color = "#1a1a1a"
+    pix_brand_color = "#0c514c"  # Verde escuro oficial do Pix
+
+    # Cores da Paleta Oficial do Pix 💎
+    pix_verde_escuro = "#0C514C"     # Cor institucional para os títulos
+    pix_bg_campo = "#E6F7F5"         # Tom suave de verde-água/turquesa para o campo da chave
     
     img = Image.new("RGB", (largura, altura), color=background_color)
     canvas = ImageDraw.Draw(img)
     
+    # Sistema de carregamento robusto garantindo fontes redimensionáveis
     try:
-        font_titulo = ImageFont.truetype("arial.ttf", 32)
-        font_sub = ImageFont.truetype("arial.ttf", 18)
-        font_dados = ImageFont.truetype("arial.ttf", 16)
+        # 1ª Opção: Fontes baixadas no repositório
+        font_titulo = ImageFont.truetype("GOTHICB.TTF", 36)
+        font_sub = ImageFont.truetype("GOTHICB.TTF", 22)
+        font_dados = ImageFont.truetype("GOTHIC.TTF", 20)
     except IOError:
-        font_titulo = font_sub = font_dados = ImageFont.load_default()
+        try:
+            # 2ª Opção: Nativas do Windows/Mac que ACEITAM tamanho (Arial)
+            font_titulo = ImageFont.truetype("arialbd.ttf", 36) # Arial Bold
+            font_sub = ImageFont.truetype("arialbd.ttf", 22)    # Arial Bold
+            font_dados = ImageFont.truetype("arial.ttf", 18)     # Arial Regular
+        except IOError:
+            # Fallback final (se tudo falhar, mas agora os de cima cobrem 99% dos casos)
+            font_titulo = font_sub = font_dados = ImageFont.load_default()
 
     # 1. Título do Topo
-    canvas.text((largura/2, 50), "Pagamento Pix", fill=text_color, font=font_titulo, anchor="mm")
+    canvas.text((largura/2, 60), "Pagamento Pix", fill=pix_verde_escuro, font=font_titulo, anchor="mm")
     
-    # 2. Inserção do Logo Oficial com Conversão Robusta para RGBA
+    # 2. Inserção do Logo Oficial (Redimensionado para ficar imponente)
     logo_path = "logo_pix.png"
     if os.path.exists(logo_path):
         with Image.open(logo_path) as logo:
-            # Força a conversão para RGBA para evitar erros de paleta e transparência indexada
-            logo_rgba = logo.convert("RGBA")
-            
-            base_width = 160
-            w_percent = (base_width / float(logo_rgba.size[0]))
-            h_size = int((float(logo_rgba.size[1]) * float(w_percent)))
-            logo_resized = logo_rgba.resize((base_width, h_size), Image.Resampling.LANCZOS)
+            logo_rgb = logo.convert("RGB")
+            base_width = 200  
+            w_percent = (base_width / float(logo_rgb.size[0]))
+            h_size = int((float(logo_rgb.size[1]) * float(w_percent)))
+            logo_resized = logo_rgb.resize((base_width, h_size), Image.Resampling.LANCZOS)
             
             logo_x = (largura - logo_resized.width) // 2
-            logo_y = 90
-            
-            # Utiliza a própria imagem RGBA convertida como máscara (garante transparência perfeita)
-            img.paste(logo_resized, (logo_x, logo_y), logo_resized)
+            logo_y = 100
+            img.paste(logo_resized, (logo_x, logo_y))
     else:
-        canvas.text((largura/2, 110), "✨ pix ✨", fill="#00b494", font=font_titulo, anchor="mm")
+        canvas.text((largura/2, 130), "✨ pix ✨", fill="#00b494", font=font_sub, anchor="mm")
     
-    # 3. Geração e colagem do QR Code
+    # 3. Geração e colagem do QR Code (Aumentado para leitura perfeita de balcão)
     payload = gerar_payload_pix(chave=chave, beneficiario=nome_beneficiario, tipo=tipo_chave_param)
-    qr = qrcode.QRCode(version=1, box_size=8, border=2)
+    qr = qrcode.QRCode(version=1, box_size=10, border=2) # Box size aumentado de 9 para 10
     qr.add_data(payload)
     qr.make(fit=True)
     
     qr_img = qr.make_image(fill_color="black", back_color=background_color)
-    qr_img = qr_img.resize((220, 220))
+    qr_img = qr_img.resize((260, 260)) 
     
     pos_x = (largura - qr_img.width) // 2
-    pos_y = 190
+    pos_y = 210
     img.paste(qr_img, (pos_x, pos_y))
     
     # 4. Caixa de dados e Identificação de Tipo
-    canvas.text((largura/2, 450), "Chave Pix", fill=text_color, font=font_sub, anchor="mm")
+    canvas.text((largura/2, 500), "Chave Pix", fill=pix_brand_color, font=font_sub, anchor="mm")
     
-    box_y_start = 480
-    canvas.rounded_rectangle([40, box_y_start, largura-40, box_y_start+40], radius=8, fill="#e8ded9")
+    box_y_start = 530
+    # Caixa maior e mais larga para destacar bem o telefone/chave
+    canvas.rounded_rectangle([35, box_y_start, largura-35, box_y_start+55], radius=12, fill=pix_bg_campo)
     
     label_formatada = identificar_label_chave(chave, tipo_chave_param)
     texto_chave = f"{label_formatada}: {chave}"
     
-    canvas.text((largura/2, box_y_start+20), texto_chave, fill=text_color, font=font_dados, anchor="mm")
-    canvas.text((largura/2, 575), nome_beneficiario, fill=text_color, font=font_sub, anchor="mm")
+    canvas.text((largura/2, box_y_start+27), texto_chave, fill=text_color, font=font_dados, anchor="mm")
+    
+    # Nome do recebedor bem visível no rodapé
+    canvas.text((largura/2, 645), nome_beneficiario.upper(), fill=text_color, font=font_sub, anchor="mm")
     
     img.save(salvar_como)
-    print(f"🎉 Sucesso! Imagem salva como '{salvar_como}'")
+    print(f"🎉 Sucesso! Imagem de alta visibilidade salva como '{salvar_como}'")
 
-    largura, altura = 400, 650
-    background_color = "#f4eae6"
-    text_color = "#1a1a1a"
-    
-    img = Image.new("RGB", (largura, altura), color=background_color)
-    canvas = ImageDraw.Draw(img)
-    
-    try:
-        font_titulo = ImageFont.truetype("arial.ttf", 32)
-        font_sub = ImageFont.truetype("arial.ttf", 18)
-        font_dados = ImageFont.truetype("arial.ttf", 16)
-    except IOError:
-        font_titulo = font_sub = font_dados = ImageFont.load_default()
 
-    # 1. Título do Topo
-    canvas.text((largura/2, 50), "Pagamento Pix", fill=text_color, font=font_titulo, anchor="mm")
-    
-    # 2. Inserção do Logo Oficial
-    logo_path = "logo_pix.png"
-    if os.path.exists(logo_path):
-        with Image.open(logo_path) as logo:
-            base_width = 160
-            w_percent = (base_width / float(logo.size[0]))
-            h_size = int((float(logo.size[1]) * float(w_percent)))
-            logo_resized = logo.resize((base_width, h_size), Image.Resampling.LANCZOS)
-            
-            logo_x = (largura - logo_resized.width) // 2
-            logo_y = 90
-            
-            if logo_resized.mode in ('RGBA', 'LA') or (logo_resized.mode == 'P' and 'transparency' in logo_resized.info):
-                img.paste(logo_resized, (logo_x, logo_y), logo_resized)
-            else:
-                img.paste(logo_resized, (logo_x, logo_y))
-    else:
-        canvas.text((largura/2, 110), "✨ Pix ✨", fill="#00b494", font=font_titulo, anchor="mm")
-    
-    # 3. Geração e colagem do QR Code
-    payload = gerar_payload_pix(chave=chave, beneficiario=nome_beneficiario, tipo=tipo_chave_param)
-    qr = qrcode.QRCode(version=1, box_size=8, border=2)
-    qr.add_data(payload)
-    qr.make(fit=True)
-    
-    qr_img = qr.make_image(fill_color="black", back_color=background_color)
-    qr_img = qr_img.resize((220, 220))
-    
-    pos_x = (largura - qr_img.width) // 2
-    pos_y = 190
-    img.paste(qr_img, (pos_x, pos_y))
-    
-    # 4. Caixa de dados e Identificação de Tipo
-    canvas.text((largura/2, 450), "Chave Pix", fill=text_color, font=font_sub, anchor="mm")
-    
-    box_y_start = 480
-    canvas.rounded_rectangle([40, box_y_start, largura-40, box_y_start+40], radius=8, fill="#e8ded9")
-    
-    label_formatada = identificar_label_chave(chave, tipo_chave_param)
-    texto_chave = f"{label_formatada}: {chave}"
-    
-    canvas.text((largura/2, box_y_start+20), texto_chave, fill=text_color, font=font_dados, anchor="mm")
-    canvas.text((largura/2, 575), nome_beneficiario, fill=text_color, font=font_sub, anchor="mm")
-    
-    img.save(salvar_como)
-    print(f"🎉 Sucesso! Imagem salva como '{salvar_como}'")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Gerador Customizado de Plaquinha Pix")
