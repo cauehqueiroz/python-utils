@@ -35,6 +35,7 @@ Passe as informações de forma dinâmica através de parâmetros (flags) no ter
 * `--nome` *(Obrigatório)*: Nome do beneficiário (titular da conta).
 * `--tipo` *(Opcional)*: Força o tipo de chave informado. Opções: `auto`, `email`, `cpf`, `cnpj`, `telefone`. (Padrão: `auto`).
 * `--saida` *(Opcional)*: Nome ou caminho do arquivo de imagem final. (Padrão: `plaquinha_pix.png`).
+* `--valor` *(Opcional)*: Um valor numérico decimal para cobranças fixas (ex: `--valor 120.50`). Se omitido ou definido como 0, o QR Code gerado aceitará qualquer valor digitado pelo pagador.
 
 ### Exemplos de Execução
 
