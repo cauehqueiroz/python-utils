@@ -2,6 +2,27 @@
 
 Este script lê todas as imagens de uma pasta, as ordena pelos nomes dos arquivos e salva tudo em um único arquivo PDF.
 
+## Comportamento padrão
+
+Se nenhum caminho for informado, o script usa automaticamente:
+
+- origem: `input`
+- saída: `output/documento_final.pdf`
+
+Ou seja, a estrutura esperada é:
+
+```text
+img-to-pdf/
+├── input/
+│   ├── 01.jpg
+│   ├── 02.png
+│   └── ...
+├── output/
+├── img-to-pdf.py
+├── README.md
+└── ...
+```
+
 ## O que ele faz
 
 - Busca imagens em uma pasta informada
@@ -23,26 +44,40 @@ pip install pillow
 
 ## Como usar
 
-1. Abra o arquivo `img-to-pdf.py`
-2. Ajuste os caminhos da pasta de origem e do PDF de saída:
+### 1) Usando os caminhos padrão
 
-```python
-PASTA_DAS_IMAGENS = r"C:\caminho\para\sua\pasta\de\imagens"
-PDF_DE_SAIDA = r"C:\caminho\para\documento_final.pdf"
-```
-
-3. Execute o script:
+Coloque as imagens na pasta `input` e execute:
 
 ```bash
 python img-to-pdf.py
 ```
 
-## Exemplo
-
-Se a pasta contiver:
+O arquivo PDF será salvo em:
 
 ```text
-imagens/
+output/documento_final.pdf
+```
+
+### 2) Informando caminhos personalizados
+
+```bash
+python img-to-pdf.py "C:/caminho/para/imagens" "C:/caminho/para/saida/meu_pdf.pdf"
+```
+
+ou também pode chamar a função em código:
+
+```python
+from img_to_pdf import imagens_para_pdf
+
+imagens_para_pdf("C:/caminho/para/imagens", "C:/caminho/para/saida/meu_pdf.pdf")
+```
+
+## Exemplo
+
+Se a pasta `input` contiver:
+
+```text
+input/
 ├── 01.jpg
 ├── 02.png
 ├── 03.jpeg
@@ -63,12 +98,4 @@ Ao rodar o script, será gerado um PDF com as páginas na ordem:
 - A ordem das imagens segue a ordem alfabética dos nomes dos arquivos.
 - Se não houver imagens na pasta informada, o script exibe uma mensagem e encerra.
 - Imagens com transparência, como PNGs, são convertidas para RGB antes de entrar no PDF.
-
-## Estrutura esperada
-
-```text
-img-to-pdf/
-├── img-to-pdf.py
-├── README.md
-└── ...
-```
+- A pasta `output` será criada automaticamente, se ainda não existir.
