@@ -12,6 +12,10 @@ python/
 │   ├── img-to-pdf.py
 │   ├── input/
 │   └── output/
+├── md-to-pdf/
+│   ├── README.md
+│   ├── md-to-pdf.py
+│   └── requirements.txt
 ├── pdf-merger/
 │   └── merge-pdf.py
 └── pix-generator/
@@ -73,6 +77,14 @@ python pix-generator.py --chave 11999998888 --nome "João Silva"
 ```
 
 Mais detalhes em [pix-generator/README.md](./pix-generator/README.md).
+
+## Word to PDF
+
+Convert Microsoft Word documents to PDF on Windows using Microsoft Word. See the [Word to PDF instructions](word-to-pdf/README.md) for requirements and usage.
+
+## Markdown para PDF
+
+Converte arquivos Markdown em PDF, preservando a formatação e permitindo escolher um esquema de cores. Consulte as [instruções do Markdown para PDF](md-to-pdf/README.md).
 
 ## Requisitos gerais
 
